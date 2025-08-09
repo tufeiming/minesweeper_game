@@ -144,6 +144,8 @@ impl Game {
                     ClickResult::GameOver => {
                         println!("💥 糟糕！你踩到了地雷！");
                         self.game_over = true;
+                        // 游戏结束时自动翻开所有格子
+                        self.board.reveal_all_mines();
                     }
                     ClickResult::Invalid => {
                         println!("❌ 无效操作（格子已翻开或已标记）");

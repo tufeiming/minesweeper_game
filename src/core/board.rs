@@ -299,6 +299,16 @@ impl Board {
         }
     }
 
+    pub fn reveal_all_mines(&mut self) {
+        for row in &mut self.cells {
+            for cell in row {
+                if cell.is_mine() {
+                    cell.set_state(CellState::Revealed);
+                }
+            }
+        }
+    }
+
     // 右键点击处理
     pub fn right_click(&mut self, pos: Position) -> ClickResult {
         if !self.is_valid_position(pos) {
