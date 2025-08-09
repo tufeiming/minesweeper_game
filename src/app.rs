@@ -1,6 +1,6 @@
-use crate::config::constants::ui_text;
-use crate::config::difficulty::Difficulty;
-use crate::core::game::Game;
+use crate::config::Difficulty;
+use crate::config::ui_text;
+use crate::core::Game;
 use std::io::{self, Write};
 
 /// 应用程序主入口点

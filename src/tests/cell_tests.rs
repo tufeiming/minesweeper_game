@@ -1,242 +1,239 @@
-//! Cell 模块测试
-//!
-//! 包含Cell结构体、CellContent和CellState的完整测试
+// Cell 模块测试
+//
+// 包含Cell结构体、CellContent和CellState的完整测试
 
-#[cfg(test)]
-mod tests {
-    use crate::core::cell::{Cell, CellContent, CellState};
-    use crate::core::board::{Board, Position};
-    use crate::config::difficulty::{Difficulty, difficulty_to_board_config};
+use crate::config::{Difficulty, difficulty_to_board_config};
+use crate::core::{Board, Position};
+use crate::core::{Cell, CellContent, CellState};
 
-    // === 基础单元测试 ===
+// === 基础单元测试 ===
 
-    #[test]
-    fn test_cell_creation() {
-        let cell = Cell::new();
+#[test]
+fn test_cell_creation() {
+    let cell = Cell::new();
 
-        // 测试初始状态
-        assert!(matches!(cell.content(), CellContent::Number(0)));
-        assert_eq!(cell.state(), CellState::Hidden);
+    // 测试初始状态
+    assert!(matches!(cell.content(), CellContent::Number(0)));
+    assert_eq!(cell.state(), CellState::Hidden);
+    assert!(!cell.is_mine());
+}
+
+#[test]
+fn test_cell_content_operations() {
+    let mut cell = Cell::new();
+
+    // 测试设置数字内容
+    cell.set_content(CellContent::Number(3));
+    assert!(matches!(cell.content(), CellContent::Number(3)));
+    assert!(!cell.is_mine());
+
+    // 测试设置地雷内容
+    cell.set_content(CellContent::Mine);
+    assert!(matches!(cell.content(), CellContent::Mine));
+    assert!(cell.is_mine());
+
+    // 测试设置不同数字
+    for i in 0..=8 {
+        cell.set_content(CellContent::Number(i));
+        assert!(matches!(cell.content(), CellContent::Number(n) if n == i));
         assert!(!cell.is_mine());
     }
+}
 
-    #[test]
-    fn test_cell_content_operations() {
-        let mut cell = Cell::new();
+#[test]
+fn test_cell_state_operations() {
+    let mut cell = Cell::new();
 
-        // 测试设置数字内容
-        cell.set_content(CellContent::Number(3));
-        assert!(matches!(cell.content(), CellContent::Number(3)));
-        assert!(!cell.is_mine());
+    // 测试初始状态
+    assert_eq!(cell.state(), CellState::Hidden);
 
-        // 测试设置地雷内容
-        cell.set_content(CellContent::Mine);
-        assert!(matches!(cell.content(), CellContent::Mine));
-        assert!(cell.is_mine());
+    // 测试翻开状态
+    cell.set_state(CellState::Revealed);
+    assert_eq!(cell.state(), CellState::Revealed);
 
-        // 测试设置不同数字
-        for i in 0..=8 {
-            cell.set_content(CellContent::Number(i));
-            assert!(matches!(cell.content(), CellContent::Number(n) if n == i));
-            assert!(!cell.is_mine());
-        }
+    // 测试标记状态
+    cell.set_state(CellState::Flagged);
+    assert_eq!(cell.state(), CellState::Flagged);
+
+    // 测试回到隐藏状态
+    cell.set_state(CellState::Hidden);
+    assert_eq!(cell.state(), CellState::Hidden);
+}
+
+#[test]
+fn test_is_mine_functionality() {
+    let mut cell = Cell::new();
+
+    // 数字格子不是地雷
+    for i in 0..=8 {
+        cell.set_content(CellContent::Number(i));
+        assert!(!cell.is_mine(), "数字 {i} 不应该被识别为地雷");
     }
 
-    #[test]
-    fn test_cell_state_operations() {
-        let mut cell = Cell::new();
+    // 地雷格子是地雷
+    cell.set_content(CellContent::Mine);
+    assert!(cell.is_mine());
+}
 
-        // 测试初始状态
-        assert_eq!(cell.state(), CellState::Hidden);
+#[test]
+fn test_cell_state_transitions() {
+    let mut cell = Cell::new();
 
-        // 测试翻开状态
-        cell.set_state(CellState::Revealed);
-        assert_eq!(cell.state(), CellState::Revealed);
+    // 测试状态转换序列：隐藏 -> 标记 -> 隐藏 -> 翻开
+    assert_eq!(cell.state(), CellState::Hidden);
 
-        // 测试标记状态
-        cell.set_state(CellState::Flagged);
-        assert_eq!(cell.state(), CellState::Flagged);
+    cell.set_state(CellState::Flagged);
+    assert_eq!(cell.state(), CellState::Flagged);
 
-        // 测试回到隐藏状态
-        cell.set_state(CellState::Hidden);
-        assert_eq!(cell.state(), CellState::Hidden);
-    }
+    cell.set_state(CellState::Hidden);
+    assert_eq!(cell.state(), CellState::Hidden);
 
-    #[test]
-    fn test_is_mine_functionality() {
-        let mut cell = Cell::new();
+    cell.set_state(CellState::Revealed);
+    assert_eq!(cell.state(), CellState::Revealed);
+}
 
-        // 数字格子不是地雷
-        for i in 0..=8 {
-            cell.set_content(CellContent::Number(i));
-            assert!(!cell.is_mine(), "数字 {i} 不应该被识别为地雷");
-        }
+#[test]
+fn test_cell_clone_functionality() {
+    let mut original = Cell::new();
+    original.set_content(CellContent::Number(5));
+    original.set_state(CellState::Flagged);
 
-        // 地雷格子是地雷
-        cell.set_content(CellContent::Mine);
-        assert!(cell.is_mine());
-    }
+    let cloned = original.clone();
 
-    #[test]
-    fn test_cell_state_transitions() {
-        let mut cell = Cell::new();
+    // 克隆应该有相同的内容和状态
+    assert!(matches!(cloned.content(), CellContent::Number(5)));
+    assert_eq!(cloned.state(), CellState::Flagged);
+    assert!(!cloned.is_mine());
 
-        // 测试状态转换序列：隐藏 -> 标记 -> 隐藏 -> 翻开
-        assert_eq!(cell.state(), CellState::Hidden);
+    // 修改原始对象不应该影响克隆
+    original.set_content(CellContent::Mine);
+    assert!(matches!(cloned.content(), CellContent::Number(5)));
+    assert!(original.is_mine());
+    assert!(!cloned.is_mine());
+}
 
-        cell.set_state(CellState::Flagged);
-        assert_eq!(cell.state(), CellState::Flagged);
+#[test]
+fn test_cell_content_copy_semantics() {
+    let content1 = CellContent::Number(3);
+    let content2 = content1; // Copy
 
-        cell.set_state(CellState::Hidden);
-        assert_eq!(cell.state(), CellState::Hidden);
+    // Copy 后两个值应该相等
+    assert!(matches!(content1, CellContent::Number(3)));
+    assert!(matches!(content2, CellContent::Number(3)));
 
-        cell.set_state(CellState::Revealed);
-        assert_eq!(cell.state(), CellState::Revealed);
-    }
+    let mine_content = CellContent::Mine;
+    let mine_copy = mine_content; // Copy
 
-    #[test]
-    fn test_cell_clone_functionality() {
-        let mut original = Cell::new();
-        original.set_content(CellContent::Number(5));
-        original.set_state(CellState::Flagged);
+    assert!(matches!(mine_content, CellContent::Mine));
+    assert!(matches!(mine_copy, CellContent::Mine));
+}
 
-        let cloned = original.clone();
+#[test]
+fn test_cell_state_equality() {
+    let state1 = CellState::Hidden;
+    let state2 = CellState::Hidden;
+    let state3 = CellState::Revealed;
 
-        // 克隆应该有相同的内容和状态
-        assert!(matches!(cloned.content(), CellContent::Number(5)));
-        assert_eq!(cloned.state(), CellState::Flagged);
-        assert!(!cloned.is_mine());
+    assert_eq!(state1, state2);
+    assert_ne!(state1, state3);
+    assert_ne!(state2, state3);
 
-        // 修改原始对象不应该影响克隆
-        original.set_content(CellContent::Mine);
-        assert!(matches!(cloned.content(), CellContent::Number(5)));
-        assert!(original.is_mine());
-        assert!(!cloned.is_mine());
-    }
+    // 测试所有状态的相等性
+    let hidden1 = CellState::Hidden;
+    let hidden2 = CellState::Hidden;
+    assert_eq!(hidden1, hidden2);
 
-    #[test]
-    fn test_cell_content_copy_semantics() {
-        let content1 = CellContent::Number(3);
-        let content2 = content1; // Copy
+    let revealed1 = CellState::Revealed;
+    let revealed2 = CellState::Revealed;
+    assert_eq!(revealed1, revealed2);
 
-        // Copy 后两个值应该相等
-        assert!(matches!(content1, CellContent::Number(3)));
-        assert!(matches!(content2, CellContent::Number(3)));
+    let flagged1 = CellState::Flagged;
+    let flagged2 = CellState::Flagged;
+    assert_eq!(flagged1, flagged2);
+}
 
-        let mine_content = CellContent::Mine;
-        let mine_copy = mine_content; // Copy
+#[test]
+fn test_comprehensive_cell_workflow() {
+    let mut cell = Cell::new();
 
-        assert!(matches!(mine_content, CellContent::Mine));
-        assert!(matches!(mine_copy, CellContent::Mine));
-    }
+    // 模拟完整的单元格生命周期
 
-    #[test]
-    fn test_cell_state_equality() {
-        let state1 = CellState::Hidden;
-        let state2 = CellState::Hidden;
-        let state3 = CellState::Revealed;
+    // 1. 初始状态
+    assert_eq!(cell.state(), CellState::Hidden);
+    assert!(matches!(cell.content(), CellContent::Number(0)));
 
-        assert_eq!(state1, state2);
-        assert_ne!(state1, state3);
-        assert_ne!(state2, state3);
+    // 2. 设置为地雷
+    cell.set_content(CellContent::Mine);
+    assert!(cell.is_mine());
 
-        // 测试所有状态的相等性
-        let hidden1 = CellState::Hidden;
-        let hidden2 = CellState::Hidden;
-        assert_eq!(hidden1, hidden2);
+    // 3. 玩家标记
+    cell.set_state(CellState::Flagged);
+    assert_eq!(cell.state(), CellState::Flagged);
 
-        let revealed1 = CellState::Revealed;
-        let revealed2 = CellState::Revealed;
-        assert_eq!(revealed1, revealed2);
+    // 4. 玩家取消标记
+    cell.set_state(CellState::Hidden);
+    assert_eq!(cell.state(), CellState::Hidden);
 
-        let flagged1 = CellState::Flagged;
-        let flagged2 = CellState::Flagged;
-        assert_eq!(flagged1, flagged2);
-    }
+    // 5. 玩家点击翻开（游戏结束）
+    cell.set_state(CellState::Revealed);
+    assert_eq!(cell.state(), CellState::Revealed);
+    assert!(cell.is_mine());
+}
 
-    #[test]
-    fn test_comprehensive_cell_workflow() {
-        let mut cell = Cell::new();
+#[test]
+fn test_default_trait() {
+    let default_cell = Cell::default();
+    let new_cell = Cell::new();
 
-        // 模拟完整的单元格生命周期
+    // Default trait 应该产生与new()相同的结果
+    assert_eq!(default_cell.state(), new_cell.state());
+    assert!(matches!(default_cell.content(), CellContent::Number(0)));
+    assert!(matches!(new_cell.content(), CellContent::Number(0)));
+    assert!(!default_cell.is_mine());
+    assert!(!new_cell.is_mine());
+}
 
-        // 1. 初始状态
-        assert_eq!(cell.state(), CellState::Hidden);
-        assert!(matches!(cell.content(), CellContent::Number(0)));
+// === 集成测试 ===
 
-        // 2. 设置为地雷
-        cell.set_content(CellContent::Mine);
-        assert!(cell.is_mine());
+#[test]
+fn test_cell_integration_with_board() {
+    let config = difficulty_to_board_config(Difficulty::Easy);
+    let mut board = Board::new(config);
 
-        // 3. 玩家标记
-        cell.set_state(CellState::Flagged);
-        assert_eq!(cell.state(), CellState::Flagged);
+    let pos = Position { row: 0, col: 0 };
 
-        // 4. 玩家取消标记
-        cell.set_state(CellState::Hidden);
-        assert_eq!(cell.state(), CellState::Hidden);
+    // 验证初始状态
+    assert!(matches!(board.get_cell_state(pos), CellState::Hidden));
 
-        // 5. 玩家点击翻开（游戏结束）
-        cell.set_state(CellState::Revealed);
-        assert_eq!(cell.state(), CellState::Revealed);
-        assert!(cell.is_mine());
-    }
+    // 进行游戏操作后验证Cell状态变化
+    let _ = board.right_click(pos); // 标记
+    assert!(matches!(board.get_cell_state(pos), CellState::Flagged));
 
-    #[test]
-    fn test_default_trait() {
-        let default_cell = Cell::default();
-        let new_cell = Cell::new();
+    let _ = board.right_click(pos); // 取消标记
+    assert!(matches!(board.get_cell_state(pos), CellState::Hidden));
+}
 
-        // Default trait 应该产生与new()相同的结果
-        assert_eq!(default_cell.state(), new_cell.state());
-        assert!(matches!(default_cell.content(), CellContent::Number(0)));
-        assert!(matches!(new_cell.content(), CellContent::Number(0)));
-        assert!(!default_cell.is_mine());
-        assert!(!new_cell.is_mine());
-    }
+#[test]
+fn test_cell_content_after_mine_generation() {
+    let config = difficulty_to_board_config(Difficulty::Easy);
+    let mut board = Board::new(config);
 
-    // === 集成测试 ===
+    // 触发地雷生成
+    let _ = board.left_click(Position { row: 4, col: 4 });
 
-    #[test]
-    fn test_cell_integration_with_board() {
-        let config = difficulty_to_board_config(Difficulty::Easy);
-        let mut board = Board::new(config);
+    // 验证所有Cell的内容都是合理的
+    let board_config = board.get_board_config();
+    for row in 0..board_config.board_size.height {
+        for col in 0..board_config.board_size.width {
+            let pos = Position { row, col };
+            let content = board.get_cell_content(pos);
 
-        let pos = Position { row: 0, col: 0 };
-
-        // 验证初始状态
-        assert!(matches!(board.get_cell_state(pos), CellState::Hidden));
-
-        // 进行游戏操作后验证Cell状态变化
-        let _ = board.right_click(pos); // 标记
-        assert!(matches!(board.get_cell_state(pos), CellState::Flagged));
-
-        let _ = board.right_click(pos); // 取消标记
-        assert!(matches!(board.get_cell_state(pos), CellState::Hidden));
-    }
-
-    #[test]
-    fn test_cell_content_after_mine_generation() {
-        let config = difficulty_to_board_config(Difficulty::Easy);
-        let mut board = Board::new(config);
-
-        // 触发地雷生成
-        let _ = board.left_click(Position { row: 4, col: 4 });
-
-        // 验证所有Cell的内容都是合理的
-        let board_config = board.get_board_config();
-        for row in 0..board_config.board_size.height {
-            for col in 0..board_config.board_size.width {
-                let pos = Position { row, col };
-                let content = board.get_cell_content(pos);
-
-                match content {
-                    CellContent::Mine => {
-                        // 地雷格子验证通过
-                    }
-                    CellContent::Number(n) => {
-                        assert!(n <= 8, "数字应该在0-8范围内");
-                    }
+            match content {
+                CellContent::Mine => {
+                    // 地雷格子验证通过
+                }
+                CellContent::Number(n) => {
+                    assert!(n <= 8, "数字应该在0-8范围内");
                 }
             }
         }

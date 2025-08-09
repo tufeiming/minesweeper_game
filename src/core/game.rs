@@ -1,5 +1,5 @@
-use crate::config::difficulty::{Difficulty, difficulty_to_board_config};
-use crate::core::board::{Board, ClickResult, Position};
+use crate::config::{Difficulty, difficulty_to_board_config};
+use crate::core::{Board, ClickResult, Position};
 use std::io::{self, Write};
 
 pub struct Game {
@@ -69,7 +69,6 @@ impl Game {
         self.board.print_debug();
         println!();
     }
-
 
     fn print_status(&self) {
         if self.victory {

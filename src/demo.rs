@@ -1,6 +1,6 @@
-use crate::config::constants::{easy, ui_text};
-use crate::config::difficulty::{difficulty_to_board_config, Difficulty};
-use crate::core::board::{Board, Position};
+use crate::config::{Difficulty, difficulty_to_board_config};
+use crate::config::{easy, ui_text};
+use crate::core::{Board, Position};
 
 /// 运行演示模式
 pub fn run_demo_mode() {
@@ -18,8 +18,11 @@ pub fn run_demo_mode() {
         "📏 游戏配置: {}x{} 棋盘，{} 个地雷",
         config.board_size.width, config.board_size.height, config.mine_count
     );
-    println!("💡 地雷密度: {:.1}%",
-        (config.mine_count as f32 / (config.board_size.width * config.board_size.height) as f32) * 100.0);
+    println!(
+        "💡 地雷密度: {:.1}%",
+        (config.mine_count as f32 / (config.board_size.width * config.board_size.height) as f32)
+            * 100.0
+    );
 
     println!("\n🔍 初始棋盘状态（所有格子都未揭示）：");
     board.print_debug();
@@ -34,7 +37,10 @@ pub fn run_demo_mode() {
         row: easy::HEIGHT / 2,
         col: easy::WIDTH / 2,
     };
-    println!("🎯 选择中心位置进行首次点击: ({}, {})", center_pos.row, center_pos.col);
+    println!(
+        "🎯 选择中心位置进行首次点击: ({}, {})",
+        center_pos.row, center_pos.col
+    );
     println!("💡 首次点击会触发地雷生成，且保证点击位置安全");
 
     let result = board.left_click(center_pos);
@@ -51,7 +57,10 @@ pub fn run_demo_mode() {
     println!("💡 当点击空白格子时，会自动揭示相邻的空白区域");
 
     let auto_reveal_pos = Position { row: 0, col: 0 };
-    println!("🔍 尝试点击角落位置触发自动揭示: ({}, {})", auto_reveal_pos.row, auto_reveal_pos.col);
+    println!(
+        "🔍 尝试点击角落位置触发自动揭示: ({}, {})",
+        auto_reveal_pos.row, auto_reveal_pos.col
+    );
 
     let auto_result = board.left_click(auto_reveal_pos);
     println!("📊 自动揭示结果: {:?}", auto_result);
@@ -69,7 +78,10 @@ pub fn run_demo_mode() {
         row: easy::HEIGHT - 1,
         col: easy::WIDTH - 1,
     };
-    println!("🚩 演示标记功能，标记位置: ({}, {})", flag_pos.row, flag_pos.col);
+    println!(
+        "🚩 演示标记功能，标记位置: ({}, {})",
+        flag_pos.row, flag_pos.col
+    );
     println!("💡 右键点击可以标记可疑的地雷位置");
 
     let flag_result = board.right_click(flag_pos);
@@ -127,8 +139,11 @@ fn demo_pause() {
 fn demo_game_states() {
     println!("💡 演示不同的游戏状态检测");
 
-    let small_config = crate::core::board::BoardConfig {
-        board_size: crate::core::board::BoardSize { width: 3, height: 3 },
+    let small_config = crate::core::BoardConfig {
+        board_size: crate::core::BoardSize {
+            width: 3,
+            height: 3,
+        },
         mine_count: 1,
     };
 
@@ -149,7 +164,10 @@ fn demo_boundary_conditions(board: &mut Board) {
     println!("💡 测试各种边界条件和错误处理");
 
     println!("\n🔄 测试重复点击已揭示的格子:");
-    let revealed_pos = Position { row: easy::HEIGHT / 2, col: easy::WIDTH / 2 };
+    let revealed_pos = Position {
+        row: easy::HEIGHT / 2,
+        col: easy::WIDTH / 2,
+    };
     let repeat_result = board.left_click(revealed_pos);
     println!("📊 重复点击结果: {:?}", repeat_result);
 
@@ -162,9 +180,18 @@ fn demo_boundary_conditions(board: &mut Board) {
     println!("\n📐 测试棋盘边界位置的操作:");
     let corner_positions = vec![
         Position { row: 0, col: 0 },
-        Position { row: 0, col: easy::WIDTH - 1 },
-        Position { row: easy::HEIGHT - 1, col: 0 },
-        Position { row: easy::HEIGHT - 1, col: easy::WIDTH - 1 },
+        Position {
+            row: 0,
+            col: easy::WIDTH - 1,
+        },
+        Position {
+            row: easy::HEIGHT - 1,
+            col: 0,
+        },
+        Position {
+            row: easy::HEIGHT - 1,
+            col: easy::WIDTH - 1,
+        },
     ];
 
     for (i, pos) in corner_positions.iter().enumerate() {

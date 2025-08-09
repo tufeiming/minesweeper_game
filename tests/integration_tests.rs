@@ -1,6 +1,6 @@
-use minesweeper_game::core::board::{Board, ClickResult, Position};
-use minesweeper_game::config::difficulty::{Difficulty, difficulty_to_board_config};
-use minesweeper_game::core::cell::CellState;
+use minesweeper_game::config::{Difficulty, difficulty_to_board_config};
+use minesweeper_game::core::CellState;
+use minesweeper_game::core::{Board, ClickResult, Position};
 
 // 基础功能测试
 #[test]
@@ -194,4 +194,3 @@ fn test_different_difficulties() {
         assert!(board.are_mines_placed());
     }
 }
-

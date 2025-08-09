@@ -9,7 +9,6 @@ pub mod board;
 pub mod cell;
 pub mod game;
 
-// 重新导出核心类型，方便外部使用
 pub use board::{Board, BoardConfig, BoardSize, ClickResult, Position};
 pub use cell::{Cell, CellContent, CellState};
 pub use game::Game;

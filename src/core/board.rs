@@ -1,4 +1,4 @@
-use crate::core::cell::{Cell, CellContent, CellState};
+use crate::core::{Cell, CellContent, CellState};
 use rand::seq::SliceRandom;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -55,7 +55,6 @@ fn is_valid_index(index: isize, limit: usize) -> bool {
     index >= 0 && index < (limit as isize)
 }
 
-// 为测试模块提供的公共函数，同时也用于内部逻辑
 pub fn get_adjacent_positions(pos: Position, size: BoardSize, skip_center: bool) -> Vec<Position> {
     let mut positions: Vec<Position> = Vec::new();
     for dr in -1..=1 {
@@ -153,14 +152,14 @@ impl Board {
 
         // ANSI 颜色常量
         const RESET: &str = "\x1b[0m";
-        const DIM: &str = "\x1b[90m";      // 暗色（列/行号、隐藏）
-        const RED: &str = "\x1b[31m";      // 红色（地雷、旗子）
-        const BLUE: &str = "\x1b[34m";     // 1
-        const GREEN: &str = "\x1b[32m";    // 2
-        const YELLOW: &str = "\x1b[33m";   // 5（传统中为棕色，使用黄代替）
-        const MAGENTA: &str = "\x1b[35m";  // 4
-        const CYAN: &str = "\x1b[36m";     // 6
-        const WHITE: &str = "\x1b[37m";    // 7
+        const DIM: &str = "\x1b[90m"; // 暗色（列/行号、隐藏）
+        const RED: &str = "\x1b[31m"; // 红色（地雷、旗子）
+        const BLUE: &str = "\x1b[34m"; // 1
+        const GREEN: &str = "\x1b[32m"; // 2
+        const YELLOW: &str = "\x1b[33m"; // 5（传统中为棕色，使用黄代替）
+        const MAGENTA: &str = "\x1b[35m"; // 4
+        const CYAN: &str = "\x1b[36m"; // 6
+        const WHITE: &str = "\x1b[37m"; // 7
         const BRIGHT_BLACK: &str = "\x1b[90m"; // 8（浅灰）
 
         fn color_for_number(n: u8) -> &'static str {
@@ -228,7 +227,6 @@ impl Board {
             DIM, RESET, RED, RESET, RED, RESET
         );
     }
-
 
     // 左键点击处理
     pub fn left_click(&mut self, pos: Position) -> ClickResult {

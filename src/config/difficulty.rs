@@ -1,5 +1,5 @@
-use crate::config::constants::{easy, hard, medium};
-use crate::core::board::{BoardConfig, BoardSize};
+use crate::config::{easy, hard, medium};
+use crate::core::{BoardConfig, BoardSize};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Difficulty {

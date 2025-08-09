@@ -7,6 +7,5 @@
 pub mod constants;
 pub mod difficulty;
 
-// 重新导出常用的配置类型
 pub use constants::*;
 pub use difficulty::{Difficulty, difficulty_to_board_config};
